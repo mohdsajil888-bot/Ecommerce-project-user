@@ -157,7 +157,7 @@
 //           <div className="flex min-h-[500px] flex-col justify-center lg:h-[850px]">
 
 //             <p className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-amber-500">
-//               {product.category || "ChocoArt Collection"}
+//               {product.category || "Lindt Collection"}
 //             </p>
 
 //             <h1 className="text-4xl font-bold leading-tight sm:text-5xl">
@@ -186,7 +186,7 @@
 
 //             <p className="whitespace-pre-line leading-8 text-white/65">
 //               {product.description ||
-//                 "A delicious treat crafted with care by ChocoArt. Enjoy a rich and memorable chocolate experience."}
+//                 "A delicious treat crafted with care by Lindt. Enjoy a rich and memorable chocolate experience."}
 //             </p>
 
 //             {/* STOCK STATUS */}
@@ -279,7 +279,7 @@
 //                 </p>
 
 //                 <p className="mt-1 text-sm text-white/50">
-//                   Discover the delicious chocolate experience of ChocoArt.
+//                   Discover the delicious chocolate experience of Lindt.
 //                 </p>
 //               </div>
 //             </div>
@@ -460,7 +460,7 @@ export default function ProductDetails() {
           <div className="flex min-h-[500px] flex-col justify-center lg:h-[850px]">
 
             <p className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-amber-500">
-              {product.category || "ChocoArt Collection"}
+              {product.category || "Lindt Collection"}
             </p>
 
             <h1 className="text-4xl font-bold leading-tight sm:text-5xl">
@@ -490,7 +490,7 @@ export default function ProductDetails() {
 
             <p className="whitespace-pre-line leading-8 text-white/65">
               {product.description ||
-                "A delicious treat crafted with care by ChocoArt. Enjoy a rich and memorable chocolate experience."}
+                "A delicious treat crafted with care by Lindt. Enjoy a rich and memorable chocolate experience."}
             </p>
 
             {/* STOCK STATUS */}
@@ -583,7 +583,7 @@ export default function ProductDetails() {
                 </p>
 
                 <p className="mt-1 text-sm text-white/50">
-                  Discover the delicious chocolate experience of ChocoArt.
+                  Discover the delicious chocolate experience of Lindt.
                 </p>
               </div>
             </div>
