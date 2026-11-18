@@ -137,7 +137,7 @@ export default function Cart() {
                         <div className="flex items-start justify-between gap-3">
                           <div>
                             <p className="text-[10px] uppercase tracking-[0.25em] text-amber-500">
-                              {item.category || "ChocoArt Special"}
+                              {item.category || "Lindt Special"}
                             </p>
 
                             <Link to={`/product/${item.id}`}>
@@ -315,7 +315,7 @@ export default function Cart() {
 
                 <div className="flex items-center gap-3 text-xs text-gray-400">
                   <Sparkles size={17} className="text-amber-400" />
-                  Made with love by ChocoArt
+                  Made with love by Lindt
                 </div>
               </div>
             </aside>
