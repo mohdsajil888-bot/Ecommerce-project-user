@@ -2,13 +2,13 @@
 import { useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import toast from "react-hot-toast";
 import { fetchOrders } from "../features/orders/ordersSlice";
 import {
   Package,
   PackageCheck,
   Truck,
   CheckCircle2,
-  Clock,
   ArrowLeft,
   MapPin,
   CalendarDays,
@@ -17,14 +17,37 @@ import {
   AlertCircle,
 } from "lucide-react";
 
-
 const trackingSteps = [
-  { name: "Order Placed", description: "Your order has been received.", icon: ShoppingBag },
-  { name: "Confirmed", description: "Your order has been confirmed.", icon: CheckCircle2 },
-  { name: "Processing", description: "Your chocolates are being prepared.", icon: Package },
-  { name: "Shipped", description: "Your order is on its way.", icon: Truck },
-  { name: "Out for Delivery", description: "Your order is arriving soon.", icon: MapPin },
-  { name: "Delivered", description: "Your order has been delivered.", icon: PackageCheck },
+  {
+    name: "Order Placed",
+    description: "Your order has been received.",
+    icon: ShoppingBag,
+  },
+  {
+    name: "Confirmed",
+    description: "Your order has been confirmed.",
+    icon: CheckCircle2,
+  },
+  {
+    name: "Processing",
+    description: "Your chocolates are being prepared.",
+    icon: Package,
+  },
+  {
+    name: "Shipped",
+    description: "Your order is on its way.",
+    icon: Truck,
+  },
+  {
+    name: "Out for Delivery",
+    description: "Your order is arriving soon.",
+    icon: MapPin,
+  },
+  {
+    name: "Delivered",
+    description: "Your order has been delivered.",
+    icon: PackageCheck,
+  },
 ];
 
 const formatPrice = (price) =>
@@ -45,38 +68,115 @@ const formatDate = (date) => {
   });
 };
 
+const STATUS_INDEX = {
+  "order placed": 0,
+  pending: 0,
+  confirmed: 1,
+  processing: 2,
+  shipped: 3,
+  "out for delivery": 4,
+  delivered: 5,
+};
+
+const getStatusIndex = (status) =>
+  STATUS_INDEX[String(status || "").trim().toLowerCase()] ?? -1;
+
 export default function OrderTracking() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
   const user = useSelector((state) => state.auth.user);
-  const { items: allOrders, status, error } = useSelector((state) => state.orders);
-  const loading = status === "loading" || status === "idle";
+
+  const {
+    items: allOrders,
+    status,
+    error,
+  } = useSelector((state) => state.orders);
+
+  const isRefreshing = status === "loading";
+  const loading =
+    allOrders.length === 0 && (status === "loading" || status === "idle");
 
   useEffect(() => {
     if (!user) {
-      navigate("/login", { replace: true, state: { from: "/orders" } });
+      navigate("/login", {
+        replace: true,
+        state: { from: "/orders" },
+      });
       return;
     }
-    if (status === "idle") dispatch(fetchOrders());
-  }, [user, navigate, dispatch, status]);
 
-  const orders = useMemo(() => allOrders.filter((order) => {
-    const sameId = user?.id != null && order.userId != null && String(order.userId) === String(user.id);
-    const sameEmail = user?.email && order.email && order.email.toLowerCase() === user.email.toLowerCase();
-    return sameId || sameEmail;
-  }).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)), [allOrders, user]);
+    const refreshOrders = () => {
+      dispatch(fetchOrders());
+    };
 
-  const getStatusIndex = (status) => {
-    const normalized = String(status || "").toLowerCase();
+    // Always fetch fresh order statuses when visiting Order Tracking
+    refreshOrders();
 
-    if (normalized === "pending") return 0;
-    if (normalized === "confirmed") return 1;
-    if (normalized === "processing") return 2;
-    if (normalized === "shipped") return 3;
-    if (normalized === "out for delivery") return 4;
-    if (normalized === "delivered") return 5;
+    // Refresh when returning to this tab or when admin updates orders in another tab
+    const handleVisibilityOrFocus = () => {
+      if (document.visibilityState === "visible") {
+        refreshOrders();
+      }
+    };
 
-    return -1;
+    const handleStorage = (event) => {
+      if (event.key === "lindt-orders-updated") {
+        refreshOrders();
+      }
+    };
+
+    window.addEventListener("focus", handleVisibilityOrFocus);
+    document.addEventListener("visibilitychange", handleVisibilityOrFocus);
+    window.addEventListener("storage", handleStorage);
+
+    const pollInterval = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        refreshOrders();
+      }
+    }, 5000);
+
+    return () => {
+      window.removeEventListener("focus", handleVisibilityOrFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityOrFocus);
+      window.removeEventListener("storage", handleStorage);
+      clearInterval(pollInterval);
+    };
+  }, [user, navigate, dispatch]);
+
+  // SHOW ERROR TOAST WHEN ORDER FETCHING FAILS
+  useEffect(() => {
+    if (status === "failed" && error) {
+      toast.error(error || "Unable to load your orders.");
+    }
+  }, [status, error]);
+
+  const orders = useMemo(
+    () =>
+      allOrders
+        .filter((order) => {
+          const sameId =
+            user?.id != null &&
+            order.userId != null &&
+            String(order.userId) === String(user.id);
+
+          const sameEmail =
+            user?.email &&
+            order.email &&
+            order.email.toLowerCase() === user.email.toLowerCase();
+
+          return sameId || sameEmail;
+        })
+        .sort(
+          (a, b) =>
+            new Date(b.createdAt || 0) -
+            new Date(a.createdAt || 0)
+        ),
+    [allOrders, user]
+  );
+
+  const handleRetry = () => {
+    dispatch(fetchOrders());
   };
 
   return (
@@ -113,18 +213,28 @@ export default function OrderTracking() {
         {/* LOADING */}
         {loading && (
           <div className="flex min-h-64 flex-col items-center justify-center gap-4">
-            <RefreshCw size={35} className="animate-spin text-amber-400" />
-            <p className="text-sm text-gray-400">Loading your orders...</p>
+            <RefreshCw
+              size={35}
+              className="animate-spin text-amber-400"
+            />
+            <p className="text-sm text-gray-400">
+              Loading your orders...
+            </p>
           </div>
         )}
 
         {/* ERROR */}
-        {!loading && error && (
+        {!loading && error && orders.length === 0 && (
           <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-7 text-center">
-            <AlertCircle className="mx-auto mb-3 text-red-400" size={30} />
+            <AlertCircle
+              className="mx-auto mb-3 text-red-400"
+              size={30}
+            />
+
             <p className="text-red-400">{error}</p>
+
             <button
-              onClick={() => dispatch(fetchOrders())}
+              onClick={handleRetry}
               className="mt-5 rounded-full bg-amber-500 px-6 py-3 text-sm font-semibold text-black"
             >
               Try Again
@@ -159,29 +269,49 @@ export default function OrderTracking() {
         )}
 
         {/* ORDER LIST */}
-        {!loading && !error && orders.length > 0 && (
+        {!loading && orders.length > 0 && (
           <div className="space-y-9">
 
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
-                <h2 className="text-2xl font-semibold">Your Purchases</h2>
+                <h2 className="text-2xl font-semibold">
+                  Your Purchases
+                </h2>
+
                 <p className="mt-1 text-sm text-gray-500">
-                  {orders.length} order{orders.length !== 1 ? "s" : ""} found
+                  {orders.length} order
+                  {orders.length !== 1 ? "s" : ""} found
                 </p>
               </div>
 
-              <Link
-                to="/shop"
-                className="rounded-full border border-amber-500/30 px-5 py-3 text-sm text-amber-400 transition hover:bg-amber-500 hover:text-black"
-              >
-                Continue Shopping
-              </Link>
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleRetry}
+                  disabled={isRefreshing}
+                  className="inline-flex items-center gap-2 rounded-full border border-white/15 px-5 py-3 text-sm text-gray-300 transition hover:border-amber-500 hover:text-amber-400 disabled:opacity-50"
+                >
+                  <RefreshCw
+                    size={15}
+                    className={isRefreshing ? "animate-spin" : ""}
+                  />
+                  {isRefreshing ? "Refreshing..." : "Refresh Status"}
+                </button>
+
+                <Link
+                  to="/shop"
+                  className="rounded-full border border-amber-500/30 px-5 py-3 text-sm text-amber-400 transition hover:bg-amber-500 hover:text-black"
+                >
+                  Continue Shopping
+                </Link>
+              </div>
             </div>
 
             {orders.map((order) => {
-              const status = String(order.status || "Pending");
-              const statusIndex = getStatusIndex(status);
-              const isCancelled = status.toLowerCase() === "cancelled";
+              const orderStatus = String(order.status || "Order Placed");
+              const statusIndex = getStatusIndex(orderStatus);
+              const isCancelled =
+                orderStatus.toLowerCase() === "cancelled";
 
               return (
                 <article
@@ -194,6 +324,7 @@ export default function OrderTracking() {
                       <p className="text-xs uppercase tracking-widest text-gray-500">
                         Order ID
                       </p>
+
                       <h3 className="mt-2 text-xl font-semibold text-amber-400">
                         #{order.id}
                       </h3>
@@ -208,6 +339,7 @@ export default function OrderTracking() {
                       <p className="text-xs uppercase tracking-widest text-gray-500">
                         Total Amount
                       </p>
+
                       <p className="mt-2 text-2xl font-semibold">
                         {formatPrice(order.total)}
                       </p>
@@ -221,7 +353,7 @@ export default function OrderTracking() {
                             : "bg-amber-500/10 text-amber-400"
                         }`}
                       >
-                        {status}
+                        {orderStatus}
                       </span>
                     </div>
                   </div>
@@ -259,7 +391,8 @@ export default function OrderTracking() {
 
                               <p className="mt-1 text-sm font-semibold text-amber-400">
                                 {formatPrice(
-                                  Number(item.price) * Number(item.quantity)
+                                  Number(item.price) *
+                                    Number(item.quantity)
                                 )}
                               </p>
                             </div>
@@ -271,7 +404,10 @@ export default function OrderTracking() {
                     {/* DELIVERY INFORMATION */}
                     <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
                       <h4 className="mb-5 flex items-center gap-2 font-semibold">
-                        <MapPin size={19} className="text-amber-400" />
+                        <MapPin
+                          size={19}
+                          className="text-amber-400"
+                        />
                         Delivery Information
                       </h4>
 
@@ -346,6 +482,7 @@ export default function OrderTracking() {
                                   }`}
                                 >
                                   {step.name}
+
                                   {current && (
                                     <span className="ml-2 text-[10px] uppercase tracking-widest text-amber-500">
                                       Current Status
@@ -363,7 +500,6 @@ export default function OrderTracking() {
                       </div>
                     )}
                   </div>
-
                 </article>
               );
             })}

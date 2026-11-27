@@ -1,17 +1,14 @@
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
-import {
-  ChevronLeft,
-  ChevronRight,
-  SlidersHorizontal,
-} from "lucide-react";
+import { SlidersHorizontal, LoaderCircle } from "lucide-react";
 import ProductCard from "../components/ProductCard";
 import { fetchProducts } from "../features/products/productsSlice";
 
 export default function Shop() {
   const dispatch = useDispatch();
+  const observerRef = useRef(null);
 
   const {
     items: products,
@@ -31,9 +28,10 @@ export default function Shop() {
 
   const [category, setCategory] = useState("All");
   const [sort, setSort] = useState("featured");
-  const [currentPage, setCurrentPage] = useState(1);
 
-  const productsPerPage = 9;
+  // Infinite scrolling settings
+  const productsPerLoad = 9;
+  const [visibleCount, setVisibleCount] = useState(productsPerLoad);
 
   // Fetch products
   useEffect(() => {
@@ -58,9 +56,9 @@ export default function Shop() {
     }
   }, [requestedCategory]);
 
-  // Reset pagination when filters change
+  // Reset visible products when filters or search change
   useEffect(() => {
-    setCurrentPage(1);
+    setVisibleCount(productsPerLoad);
   }, [search, category, sort]);
 
   // Get available database categories
@@ -148,30 +146,44 @@ export default function Shop() {
     return filtered;
   }, [products, search, category, sort]);
 
-  // Pagination
-  const totalPages = Math.ceil(
-    visibleProducts.length / productsPerPage
-  );
-
-  const safePage = Math.min(
-    currentPage,
-    Math.max(totalPages, 1)
-  );
-
-  const startIndex = (safePage - 1) * productsPerPage;
-
+  // Products currently displayed
   const currentProducts = visibleProducts.slice(
-    startIndex,
-    startIndex + productsPerPage
+    0,
+    visibleCount
   );
 
-  const changePage = (page) => {
-    setCurrentPage(page);
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  };
+  const hasMore = visibleCount < visibleProducts.length;
+
+  // Load more products when the user reaches the bottom
+  useEffect(() => {
+    const target = observerRef.current;
+
+    if (!target || !hasMore || status !== "succeeded") {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount((previousCount) =>
+            Math.min(
+              previousCount + productsPerLoad,
+              visibleProducts.length
+            )
+          );
+        }
+      },
+      {
+        root: null,
+        rootMargin: "300px",
+        threshold: 0,
+      }
+    );
+
+    observer.observe(target);
+
+    return () => observer.disconnect();
+  }, [hasMore, status, visibleProducts.length, visibleCount]);
 
   // Reset filters
   const resetFilters = () => {
@@ -242,7 +254,7 @@ export default function Shop() {
           </button>
         </div>
 
-        {/* Loading */}
+        {/* Initial Loading */}
         {status === "loading" && (
           <p className="py-16 text-center text-white/60">
             Loading products...
@@ -281,54 +293,33 @@ export default function Shop() {
                 ))}
               </div>
 
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="mt-14 flex flex-wrap items-center justify-center gap-3">
-
-                  <button
-                    onClick={() => changePage(safePage - 1)}
-                    disabled={safePage === 1}
-                    className="flex items-center gap-2 rounded-full border border-white/20 px-5 py-3 text-sm hover:border-[#c9a46a] hover:text-[#c9a46a] disabled:opacity-30"
-                  >
-                    <ChevronLeft size={18} />
-                    Previous
-                  </button>
-
-                  {Array.from(
-                    { length: totalPages },
-                    (_, i) => (
-                      <button
-                        key={i + 1}
-                        onClick={() => changePage(i + 1)}
-                        className={`h-11 w-11 rounded-full border text-sm ${
-                          safePage === i + 1
-                            ? "border-[#c9a46a] bg-[#c9a46a] text-black"
-                            : "border-white/20 text-white hover:border-[#c9a46a]"
-                        }`}
-                      >
-                        {i + 1}
-                      </button>
-                    )
-                  )}
-
-                  <button
-                    onClick={() => changePage(safePage + 1)}
-                    disabled={safePage === totalPages}
-                    className="flex items-center gap-2 rounded-full border border-white/20 px-5 py-3 text-sm hover:border-[#c9a46a] hover:text-[#c9a46a] disabled:opacity-30"
-                  >
-                    Next
-                    <ChevronRight size={18} />
-                  </button>
+              {/* Infinite Scroll Trigger */}
+              {hasMore && (
+                <div
+                  ref={observerRef}
+                  className="flex justify-center py-12"
+                >
+                  <div className="flex items-center gap-3 text-sm text-amber-400">
+                    <LoaderCircle
+                      size={20}
+                      className="animate-spin"
+                    />
+                    Loading more products...
+                  </div>
                 </div>
               )}
 
-              <p className="mt-5 text-center text-sm text-white/40">
-                Showing {startIndex + 1}–
-                {Math.min(
-                  startIndex + productsPerPage,
-                  visibleProducts.length
-                )}{" "}
-                of {visibleProducts.length} products
+              {/* All Products Loaded */}
+              {!hasMore && (
+                <p className="mt-12 text-center text-sm text-white/40">
+                  You've explored all {visibleProducts.length} products!
+                </p>
+              )}
+
+              {/* Product Count */}
+              <p className="mt-4 text-center text-sm text-white/40">
+                Showing {currentProducts.length} of{" "}
+                {visibleProducts.length} products
               </p>
             </>
           )}

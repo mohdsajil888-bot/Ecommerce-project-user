@@ -13,6 +13,7 @@ import {
   Mail,
   ShieldCheck,
 } from "lucide-react";
+import toast from "react-hot-toast";
 
 export default function Profile() {
   const dispatch = useDispatch();
@@ -25,15 +26,44 @@ export default function Profile() {
   const initial = name.charAt(0).toUpperCase();
 
   const handleLogout = () => {
-    const confirmLogout = window.confirm(
-      "Are you sure you want to logout?"
+    toast(
+      (t) => (
+        <div className="flex flex-col gap-3">
+          <p className="font-medium text-white">
+            Are you sure you want to logout?
+          </p>
+
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                toast.dismiss(t.id);
+                dispatch(logout());
+                toast.success("You have been logged out successfully.");
+                navigate("/login");
+              }}
+              className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-500"
+            >
+              Logout
+            </button>
+
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="rounded-lg border border-white/20 px-4 py-2 text-sm text-gray-300 hover:bg-white/10"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: Infinity,
+        style: {
+          background: "#21150d",
+          border: "1px solid #78350f",
+          color: "#fff",
+        },
+      }
     );
-
-    if (!confirmLogout) return;
-
-    dispatch(logout());
-    alert("You have been logged out successfully.");
-    navigate("/login");
   };
 
   const accountLinks = [

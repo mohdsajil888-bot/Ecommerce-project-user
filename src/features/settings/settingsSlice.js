@@ -1,8 +1,12 @@
+
 import { createSlice } from "@reduxjs/toolkit";
 
 const settingsSlice = createSlice({
   name: "settings",
-  initialState: { notifications: true, appearance: "dark" },
+  initialState: {
+    notifications: true,
+    appearance: "dark",
+  },
   reducers: {
     setNotifications: (state, action) => {
       state.notifications = action.payload;

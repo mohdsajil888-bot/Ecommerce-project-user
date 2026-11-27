@@ -1,66 +1,6 @@
 {
   "products": [
     {
-      "id": "1",
-      "name": "DIWALI SPECIAL, KUNAFA PISTACHIO COMBO BOX | FOO FOODS",
-      "price": 1999,
-      "image": "/products/diwali_1200x750.webp",
-      "category": "Kunafa Chocolate Gift Box",
-      "description": "A luxurious assortment of pistachio kunafa chocolates, crafted for a rich and unforgettable gifting experience.",
-      "stock": 8,
-      "bestSeller": true
-    },
-    {
-      "id": "2",
-      "name": "DIWALI CRUNCH JAR COMBO – PISTACHIO, ROCHÉ & BUENO",
-      "price": 2999,
-      "image": "/products/crunch-jar-combo_1200x750.webp",
-      "category": "Chocolate Crunch Jars",
-      "description": "Three irresistible crunch jar flavours featuring pistachio, rich chocolate and creamy hazelnut goodness.",
-      "stock": 10,
-      "bestSeller": true
-    },
-    {
-      "id": "3",
-      "name": "Crunch Jar Combo – Pistachio, Roché & Raffella | Saver’s Choice",
-      "price": 2499,
-      "image": "/products/01-catalog-hero(1)_1200x750.webp",
-      "category": "Premium Crunch Jar Combo",
-      "description": "Enjoy three iconic flavours in one delicious combo, from pistachio crunch to smooth chocolate and creamy white chocolate.",
-      "stock": 15,
-      "bestSeller": true
-    },
-    {
-      "id": "4",
-      "name": "Kunafa Bites Box - 20 x 10g individual packs",
-      "price": 949,
-      "image": "/products/bites1_1200x750.webp",
-      "category": "Kunafa Chocolate Bites",
-      "description": "Bite-sized kunafa chocolate treats with a delightful pistachio filling, perfect for sharing and gifting.",
-      "stock": 14,
-      "bestSeller": true
-    },
-    {
-      "id": "5",
-      "name": "Dubai Viral Kunafa Pistachio Chocolate 240g - India's Biggest Kunafa Chocolate",
-      "price": 899,
-      "image": "/products/dhvfgdw14ppfixhomvmg_1200x750.webp",
-      "category": "Pistachio Kunafa Chocolate",
-      "description": "Rich chocolate filled with creamy pistachio and crispy kunafa for a delicious Dubai-inspired treat.",
-      "stock": 15,
-      "bestSeller": true
-    },
-    {
-      "id": "6",
-      "name": "PISTACHIO KUNAFA CRUNCH JAR - Belgian Chocolate & Pistachio with Authentic Kunafa",
-      "price": 999,
-      "image": "/products/crunchjar1_1200x750.webp",
-      "category": "Pistachio Crunch Jars",
-      "description": "Rich Belgian chocolate blended with creamy pistachio and authentic crispy kunafa for an irresistible crunchy treat.",
-      "stock": 15,
-      "bestSeller": true
-    },
-    {
       "id": "7",
       "name": "Choco Hazelnut Crunch Jar - With Original Nutella - Crispy Kunafa with Chocolate Hazelnut Paste",
       "price": 949,
@@ -137,7 +77,7 @@
       "image": "/products/birthday1_1200x750.webp",
       "category": "Chocolate Gift Boxes",
       "description": "A surprise gift box filled with rich pistachio kunafa chocolate, offering a delicious blend of creamy, crunchy and chocolaty flavours.",
-      "stock": 15,
+      "stock": 10,
       "bestSeller": true
     },
     {
@@ -149,6 +89,66 @@
       "description": "A delightful gift box featuring 9 bite-sized pistachio kunafa treats, combining rich chocolate, creamy pistachio and crispy kunafa.",
       "stock": 15,
       "bestSeller": true
+    },
+    {
+      "name": "DIWALI SPECIAL, KUNAFA PISTACHIO COMBO BOX | FOO FOODS",
+      "price": 1999,
+      "image": "/products/diwali_1200x750.webp",
+      "category": "Kunafa Chocolate Gift Box",
+      "description": "A luxurious assortment of pistachio kunafa chocolates, crafted for a rich and unforgettable gifting experience.",
+      "stock": 10,
+      "bestSeller": true,
+      "id": "1"
+    },
+    {
+      "name": "DIWALI CRUNCH JAR COMBO – PISTACHIO, ROCHÉ & BUENO",
+      "price": 2999,
+      "image": "/products/crunch-jar-combo_1200x750.webp",
+      "category": "Chocolate Crunch Jars",
+      "description": "Three irresistible crunch jar flavours featuring pistachio, rich chocolate and creamy hazelnut goodness.",
+      "stock": 10,
+      "bestSeller": true,
+      "id": "2"
+    },
+    {
+      "name": "Crunch Jar Combo – Pistachio, Roché & Raffella | Saver’s Choice",
+      "price": 2499,
+      "image": "/products/01-catalog-hero(1)_1200x750.webp",
+      "category": "Premium Crunch Jar Combo",
+      "description": "Enjoy three iconic flavours in one delicious combo, from pistachio crunch to smooth chocolate and creamy white chocolate.",
+      "stock": 14,
+      "bestSeller": true,
+      "id": "3"
+    },
+    {
+      "name": "Kunafa Bites Box - 20 x 10g individual packs",
+      "price": 949,
+      "image": "/products/bites1_1200x750.webp",
+      "category": "Kunafa Chocolate Bites",
+      "description": "Bite-sized kunafa chocolate treats with a delightful pistachio filling, perfect for sharing and gifting.",
+      "stock": 14,
+      "bestSeller": true,
+      "id": "4"
+    },
+    {
+      "name": "Dubai Viral Kunafa Pistachio Chocolate 240g - India's Biggest Kunafa Chocolate",
+      "price": 899,
+      "image": "/products/dhvfgdw14ppfixhomvmg_1200x750.webp",
+      "category": "Pistachio Kunafa Chocolate",
+      "description": "Rich chocolate filled with creamy pistachio and crispy kunafa for a delicious Dubai-inspired treat.",
+      "stock": 15,
+      "bestSeller": true,
+      "id": "5"
+    },
+    {
+      "name": "PISTACHIO KUNAFA CRUNCH JAR - Belgian Chocolate & Pistachio with Authentic Kunafa",
+      "price": 999,
+      "image": "/products/crunchjar1_1200x750.webp",
+      "category": "Pistachio Crunch Jars",
+      "description": "Rich Belgian chocolate blended with creamy pistachio and authentic crispy kunafa for an irresistible crunchy treat.",
+      "stock": 15,
+      "bestSeller": true,
+      "id": "6"
     }
   ],
   "users": [
@@ -156,7 +156,8 @@
       "name": "Sajil P P",
       "email": "mohdsajil888@gmail.com",
       "password": "sajilpp@321",
-      "id": 1
+      "id": 1,
+      "isBlocked": false
     }
   ],
   "carts": [
@@ -186,93 +187,23 @@
           "name": "DIWALI SPECIAL, KUNAFA PISTACHIO COMBO BOX | FOO FOODS",
           "image": "/products/diwali_1200x750.webp",
           "price": 1999,
-          "quantity": 1
+          "quantity": 4
         }
       ],
-      "total": 1999,
-      "status": "Confirmed",
-      "createdAt": "2026-11-16T05:16:22.363Z",
+      "total": 7996,
+      "status": "Delivered",
+      "createdAt": "2026-11-26T04:12:52.768Z",
       "id": 1
-    },
-    {
-      "userId": 1,
-      "customerName": "Mohd SAJIL",
-      "email": "mohdsajil888@gmail.com",
-      "phone": "9544953139",
-      "address": "jaseeras\nkandakkai road,mayyil",
-      "items": [
-        {
-          "id": "4",
-          "name": "Kunafa Bites Box - 20 x 10g individual packs",
-          "image": "/products/bites1_1200x750.webp",
-          "price": 949,
-          "quantity": 1
-        }
-      ],
-      "total": 949,
-      "status": "Confirmed",
-      "createdAt": "2026-11-16T05:19:16.869Z",
-      "id": 2
-    },
-    {
-      "userId": 1,
-      "customerName": "Mohd SAJIL",
-      "email": "mohdsajil888@gmail.com",
-      "phone": "9544953139",
-      "address": "jaseeras\nkandakkai road,mayyil",
-      "items": [
-        {
-          "id": "1",
-          "name": "DIWALI SPECIAL, KUNAFA PISTACHIO COMBO BOX | FOO FOODS",
-          "image": "/products/diwali_1200x750.webp",
-          "price": 1999,
-          "quantity": 10
-        }
-      ],
-      "total": 19990,
-      "status": "Confirmed",
-      "createdAt": "2026-11-16T05:19:55.730Z",
-      "id": 3
-    },
-    {
-      "userId": 1,
-      "customerName": "Mohd SAJIL",
-      "email": "mohdsajil888@gmail.com",
-      "phone": "9544953139",
-      "address": "jaseeras\nkandakkai road,mayyil",
-      "items": [
-        {
-          "id": "1",
-          "name": "DIWALI SPECIAL, KUNAFA PISTACHIO COMBO BOX | FOO FOODS",
-          "image": "/products/diwali_1200x750.webp",
-          "price": 1999,
-          "quantity": 1
-        }
-      ],
-      "total": 1999,
-      "status": "Confirmed",
-      "createdAt": "2026-11-17T07:14:00.773Z",
-      "id": 4
-    },
-    {
-      "userId": 1,
-      "customerName": "Mohd SAJIL",
-      "email": "mohdsajil888@gmail.com",
-      "phone": "9544953139",
-      "address": "jaseeras\nkandakkai road,mayyil",
-      "items": [
-        {
-          "id": "1",
-          "name": "DIWALI SPECIAL, KUNAFA PISTACHIO COMBO BOX | FOO FOODS",
-          "image": "/products/diwali_1200x750.webp",
-          "price": 1999,
-          "quantity": 1
-        }
-      ],
-      "total": 1999,
-      "status": "Confirmed",
-      "createdAt": "2026-11-18T06:14:34.385Z",
-      "id": 5
     }
-  ]
+  ],
+  "admins": [
+    {
+      "id": 1,
+      "name": "Lindt Admin",
+      "email": "admin@lindt.com",
+      "password": "Admin@123",
+      "role": "admin"
+    }
+  ],
+  "deletedProducts": []
 }

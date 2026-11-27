@@ -1,6 +1,7 @@
 
 import { useSelector, useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import {
   UserRound,
   Bell,
@@ -28,11 +29,68 @@ export default function Settings() {
   );
 
   const handleLogout = () => {
-    if (window.confirm("Are you sure you want to logout?")) {
-      dispatch(logout());
-      alert("You have been logged out.");
-      navigate("/login");
-    }
+    toast(
+      (t) => (
+        <div className="w-full">
+          <p className="font-semibold text-white">
+            Are you sure you want to logout?
+          </p>
+
+          <div className="mt-4 flex justify-end gap-3">
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="rounded-lg border border-white/20 px-4 py-2 text-sm text-white hover:bg-white/10"
+            >
+              Cancel
+            </button>
+
+            <button
+              onClick={() => {
+                toast.dismiss(t.id);
+                dispatch(logout());
+                toast.success("You have been logged out.");
+                navigate("/login");
+              }}
+              className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-black hover:bg-amber-400"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: Infinity,
+        style: {
+          background: "#21150d",
+          color: "#fff",
+          border: "1px solid #b7791f",
+          borderRadius: "14px",
+          padding: "16px",
+        },
+      }
+    );
+  };
+
+  const handleNotifications = () => {
+    const newValue = !notifications;
+
+    dispatch(setNotifications(newValue));
+
+    toast.success(
+      newValue
+        ? "Notifications enabled."
+        : "Notifications disabled."
+    );
+  };
+
+  const handleAppearance = (value) => {
+    dispatch(setAppearance(value));
+
+    toast.success(
+      value === "dark"
+        ? "Dark appearance selected."
+        : "Light appearance preference selected."
+    );
   };
 
   return (
@@ -220,7 +278,7 @@ export default function Settings() {
 
                 <button
                   type="button"
-                  onClick={() => dispatch(setNotifications(!notifications))}
+                  onClick={handleNotifications}
                   aria-label="Toggle notifications"
                   aria-pressed={notifications}
                   className={`relative h-7 w-12 shrink-0 rounded-full transition ${
@@ -245,7 +303,7 @@ export default function Settings() {
 
                 <select
                   value={appearance}
-                  onChange={(e) => dispatch(setAppearance(e.target.value))}
+                  onChange={(e) => handleAppearance(e.target.value)}
                   className="rounded-full border border-white/10 bg-[#171717] px-4 py-2 text-sm text-white"
                 >
                   <option value="dark">Dark</option>

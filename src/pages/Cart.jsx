@@ -12,6 +12,7 @@ import {
   PackageCheck,
   Sparkles,
 } from "lucide-react";
+import toast from "react-hot-toast";
 
 import {
   removeFromCart,
@@ -33,6 +34,31 @@ export default function Cart() {
     (total, item) => total + Number(item.quantity || 0),
     0
   );
+
+  const handleRemove = (id, name) => {
+    dispatch(removeFromCart(id));
+    toast.success(`${name} removed from your cart.`);
+  };
+
+  const handleQuantityChange = (id, quantity, stock) => {
+    if (quantity < 1) return;
+
+    if (
+      Number.isFinite(stock) &&
+      stock !== undefined &&
+      quantity > stock
+    ) {
+      toast.error("You cannot add more than the available stock.");
+      return;
+    }
+
+    dispatch(
+      updateQuantity({
+        productId: id,
+        quantity,
+      })
+    );
+  };
 
   return (
     <main className="min-h-screen bg-[#090705] px-5 pb-24 pt-32 text-white md:px-12">
@@ -152,9 +178,7 @@ export default function Cart() {
                           </div>
 
                           <button
-                            onClick={() =>
-                              dispatch(removeFromCart(id))
-                            }
+                            onClick={() => handleRemove(id, item.name)}
                             aria-label={`Remove ${item.name}`}
                             className="rounded-full p-2 text-gray-500 transition hover:bg-red-500/10 hover:text-red-400"
                           >
@@ -163,17 +187,17 @@ export default function Cart() {
                         </div>
 
                         <div className="flex flex-wrap items-center justify-between gap-4">
+
                           {/* QUANTITY CONTROL */}
                           <div className="flex items-center gap-4 rounded-full border border-white/10 bg-black/20 px-4 py-2.5">
                             <button
                               aria-label="Decrease quantity"
                               disabled={quantity <= 1}
                               onClick={() =>
-                                dispatch(
-                                  updateQuantity({
-                                    productId: id,
-                                    quantity: quantity - 1,
-                                  })
+                                handleQuantityChange(
+                                  id,
+                                  quantity - 1,
+                                  stock
                                 )
                               }
                               className="text-gray-400 transition hover:text-amber-400 disabled:opacity-30"
@@ -193,11 +217,10 @@ export default function Cart() {
                                 quantity >= stock
                               }
                               onClick={() =>
-                                dispatch(
-                                  updateQuantity({
-                                    productId: id,
-                                    quantity: quantity + 1,
-                                  })
+                                handleQuantityChange(
+                                  id,
+                                  quantity + 1,
+                                  stock
                                 )
                               }
                               className="text-gray-400 transition hover:text-amber-400 disabled:opacity-30"
@@ -233,7 +256,6 @@ export default function Cart() {
                 <ArrowRight size={17} />
                 Continue Shopping
               </Link>
-
             </section>
 
             {/* ORDER SUMMARY */}

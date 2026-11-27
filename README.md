@@ -1,16 +1,55 @@
-# React + Vite
+# Lindt E-commerce + Admin Panel
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This project contains the existing customer-facing Lindt storefront and an integrated admin panel in one React/Vite application. Both sides use the same Redux store and JSON Server database.
 
-Currently, two official plugins are available:
+## Requirements
+- Node.js (LTS recommended)
+- npm
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Install dependencies
+Open a terminal in this folder and run:
 
-## React Compiler
+```bash
+npm install
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Run the project
+Open **two terminals** in this same folder.
 
-## Expanding the ESLint configuration
+Terminal 1 — start the JSON Server API:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+npm run server
+```
+
+The API runs at http://localhost:3000.
+
+Terminal 2 — start the Vite frontend:
+
+```bash
+npm run dev
+```
+
+Open the local URL printed by Vite (usually http://localhost:5173).
+
+## Routes
+- Customer storefront: http://localhost:5173/
+- Admin login: http://localhost:5173/admin/login
+- Admin dashboard: http://localhost:5173/admin
+- Admin products: http://localhost:5173/admin/products
+- Admin users: http://localhost:5173/admin/users
+- Admin orders: http://localhost:5173/admin/orders
+- Admin settings: http://localhost:5173/admin/settings
+
+## Local demo admin account
+- Email: admin@lindt.com
+- Password: Admin@123
+
+The demo admin record is in the `admins` collection in `db.json`.
+
+## Notes
+- The original customer-side pages, product records, users, carts, wishlists and orders have been retained.
+- The admin panel uses the same `db.json` and API on port 3000.
+- Admin product operations create, update and delete records in `products`.
+- Admin user blocking writes an `isBlocked` flag to the user record. The customer login flow must also check that flag before allowing a blocked account to sign in.
+- This is a local learning/demo setup. JSON Server and plain-text demo credentials are not production authentication or security. A production deployment needs server-side authentication, authorization and password hashing.

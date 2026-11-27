@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from "react";
 import {
   Search,
@@ -14,6 +15,7 @@ import {
 
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import toast from "react-hot-toast";
 
 import { selectCartCount } from "../features/cart/cartSlice";
 import { fetchProducts } from "../features/products/productsSlice";
@@ -62,7 +64,7 @@ export default function Navbar() {
     setShowMore(false);
 
     if (!user) {
-      alert(
+      toast.error(
         `Please login or create an account to access your ${pageName}.`
       );
 
@@ -258,6 +260,7 @@ export default function Navbar() {
                 filteredProducts.map((product) => (
                   <button
                     key={product.id ?? product.name}
+                    type="button"
                     onClick={() => openProduct(product)}
                     className="flex w-full items-center gap-3 p-2 text-left hover:bg-white/10"
                   >
@@ -286,6 +289,8 @@ export default function Navbar() {
 
               {filteredProducts.length > 0 && (
                 <button
+                  type="submit"
+                  form="search-form"
                   onClick={handleSearch}
                   className="w-full border-t border-white/10 py-3 text-sm text-amber-400"
                 >

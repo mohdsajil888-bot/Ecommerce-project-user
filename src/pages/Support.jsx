@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
 import {
   Headphones,
   Package,
@@ -31,8 +32,6 @@ export default function Support() {
     subject: "Order Related",
     message: "",
   });
-
-  const [submitted, setSubmitted] = useState(false);
 
   const categories = [
     { name: "All", icon: HelpCircle },
@@ -123,7 +122,8 @@ export default function Support() {
 
     // Front-end demonstration only.
     // Connect this handler to your backend to receive support requests.
-    setSubmitted(true);
+
+    toast.success("Your support message has been submitted!");
 
     setFormData({
       name: "",
@@ -467,129 +467,101 @@ export default function Support() {
               Fill in the details below.
             </p>
 
-            {submitted ? (
-              <div className="flex min-h-[380px] flex-col items-center justify-center text-center">
+            <form onSubmit={handleSubmit} className="space-y-5">
 
-                <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-500/10 text-green-400">
-                  <Send size={35} />
-                </div>
+              <div>
+                <label className="mb-2 block text-sm text-white/70">
+                  Your Name
+                </label>
 
-                <h3 className="mb-3 text-2xl font-bold">
-                  Thank You!
-                </h3>
-
-                <p className="max-w-sm text-sm leading-7 text-white/50">
-                  Your message has been submitted in this demo.
-                  Connect the form to your backend to receive and
-                  manage actual support requests.
-                </p>
-
-                <button
-                  onClick={() => setSubmitted(false)}
-                  className="mt-7 rounded-full bg-amber-500 px-7 py-3 text-sm font-bold text-black hover:bg-amber-400"
-                >
-                  Send Another Message
-                </button>
-
+                <input
+                  required
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      name: e.target.value,
+                    })
+                  }
+                  placeholder="Enter your name"
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-4 text-sm text-white outline-none transition placeholder:text-white/25 focus:border-amber-400/60"
+                />
               </div>
-            ) : (
 
-              <form onSubmit={handleSubmit} className="space-y-5">
+              <div>
+                <label className="mb-2 block text-sm text-white/70">
+                  Email Address
+                </label>
 
-                <div>
-                  <label className="mb-2 block text-sm text-white/70">
-                    Your Name
-                  </label>
+                <input
+                  required
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      email: e.target.value,
+                    })
+                  }
+                  placeholder="Enter your email"
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-4 text-sm text-white outline-none transition placeholder:text-white/25 focus:border-amber-400/60"
+                />
+              </div>
 
-                  <input
-                    required
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        name: e.target.value,
-                      })
-                    }
-                    placeholder="Enter your name"
-                    className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-4 text-sm text-white outline-none transition placeholder:text-white/25 focus:border-amber-400/60"
-                  />
-                </div>
+              <div>
+                <label className="mb-2 block text-sm text-white/70">
+                  Support Category
+                </label>
 
-                <div>
-                  <label className="mb-2 block text-sm text-white/70">
-                    Email Address
-                  </label>
-
-                  <input
-                    required
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        email: e.target.value,
-                      })
-                    }
-                    placeholder="Enter your email"
-                    className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-4 text-sm text-white outline-none transition placeholder:text-white/25 focus:border-amber-400/60"
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm text-white/70">
-                    Support Category
-                  </label>
-
-                  <select
-                    value={formData.subject}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        subject: e.target.value,
-                      })
-                    }
-                    className="w-full rounded-xl border border-white/10 bg-[#171717] px-4 py-4 text-sm text-white outline-none focus:border-amber-400/60"
-                  >
-                    <option>Order Related</option>
-                    <option>Shipping & Delivery</option>
-                    <option>Payment Issue</option>
-                    <option>Return & Replacement</option>
-                    <option>Product Information</option>
-                    <option>Other</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm text-white/70">
-                    Your Message
-                  </label>
-
-                  <textarea
-                    required
-                    rows={5}
-                    value={formData.message}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        message: e.target.value,
-                      })
-                    }
-                    placeholder="Tell us how we can help..."
-                    className="w-full resize-none rounded-xl border border-white/10 bg-white/[0.04] px-4 py-4 text-sm text-white outline-none transition placeholder:text-white/25 focus:border-amber-400/60"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="flex w-full items-center justify-center gap-3 rounded-xl bg-amber-500 py-4 text-sm font-bold text-black transition hover:bg-amber-400"
+                <select
+                  value={formData.subject}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      subject: e.target.value,
+                    })
+                  }
+                  className="w-full rounded-xl border border-white/10 bg-[#171717] px-4 py-4 text-sm text-white outline-none focus:border-amber-400/60"
                 >
-                  Submit Message
-                  <Send size={17} />
-                </button>
+                  <option>Order Related</option>
+                  <option>Shipping & Delivery</option>
+                  <option>Payment Issue</option>
+                  <option>Return & Replacement</option>
+                  <option>Product Information</option>
+                  <option>Other</option>
+                </select>
+              </div>
 
-              </form>
-            )}
+              <div>
+                <label className="mb-2 block text-sm text-white/70">
+                  Your Message
+                </label>
+
+                <textarea
+                  required
+                  rows={5}
+                  value={formData.message}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      message: e.target.value,
+                    })
+                  }
+                  placeholder="Tell us how we can help..."
+                  className="w-full resize-none rounded-xl border border-white/10 bg-white/[0.04] px-4 py-4 text-sm text-white outline-none transition placeholder:text-white/25 focus:border-amber-400/60"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="flex w-full items-center justify-center gap-3 rounded-xl bg-amber-500 py-4 text-sm font-bold text-black transition hover:bg-amber-400"
+              >
+                Submit Message
+                <Send size={17} />
+              </button>
+
+            </form>
 
           </div>
         </div>

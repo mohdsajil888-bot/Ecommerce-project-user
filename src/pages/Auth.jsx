@@ -1,44 +1,99 @@
 
 import { useState } from "react";
-import { useDispatch } from "react-redux";
-import { setUser } from "../features/auth/authSlice";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { selectAuthUser, setUser } from "../features/auth/authSlice";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, ArrowRight, ArrowLeft } from "lucide-react";
-import { getUsers, createUser } from "../services/userService";
+import { getAdmins, getUsers, createUser } from "../services/userService";
+import toast from "react-hot-toast";
 
 export default function Auth() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
 
+  const currentUser = useSelector(selectAuthUser);
+
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   const destination = location.state?.from || "/shop";
 
+  // Redirect if a user or admin is already logged in
+  if (currentUser) {
+    return (
+      <Navigate
+        to={currentUser.role === "admin" ? "/admin" : destination}
+        replace
+      />
+    );
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage("");
+
+    // Confirm password validation during signup
+    if (!isLogin && password !== confirmPassword) {
+      toast.error("Passwords do not match. Please try again.");
+      return;
+    }
+
     setLoading(true);
 
+    const cleanEmail = email.trim().toLowerCase();
+
     try {
-      const users = await getUsers();
-      const cleanEmail = email.trim().toLowerCase();
+      const [admins, users] = await Promise.all([
+        getAdmins().catch(() => []),
+        getUsers(),
+      ]);
 
       if (isLogin) {
-        const existingUser = users.find(
-          (user) =>
-            user.email?.toLowerCase() === cleanEmail &&
-            user.password === password
+        // Check admin accounts first
+        const matchedAdmin = admins.find(
+          (item) =>
+            item.email?.trim().toLowerCase() === cleanEmail &&
+            item.password === password
         );
 
-        if (!existingUser) {
-          setMessage("Invalid email or password.");
+        if (matchedAdmin) {
+          dispatch(
+            setUser({
+              id: matchedAdmin.id,
+              name: matchedAdmin.name,
+              email: matchedAdmin.email,
+              role: matchedAdmin.role || "admin",
+            })
+          );
+
+          toast.success("Welcome to Lindt Admin!");
+          navigate("/admin", { replace: true });
+          return;
+        }
+
+        // Check customer accounts next
+        const existingUser = users.find(
+          (user) =>
+            user.email?.trim().toLowerCase() === cleanEmail
+        );
+
+        if (!existingUser || existingUser.password !== password) {
+          toast.error("Invalid email or password.");
+          return;
+        }
+
+        // Prevent blocked customers from logging in
+        if (existingUser.isBlocked) {
+          toast.error(
+            "Your account has been blocked. Please contact customer support."
+          );
           return;
         }
 
@@ -46,50 +101,89 @@ export default function Auth() {
           id: existingUser.id,
           name: existingUser.name,
           email: existingUser.email,
+          role: existingUser.role || "user",
         };
 
         dispatch(setUser(loggedInUser));
-        localStorage.setItem("chocoart-user", JSON.stringify(loggedInUser));
 
-        alert("Login successful! Welcome back, " + existingUser.name + "!");
-        navigate(destination, { replace: true });
+        if (loggedInUser.role === "admin") {
+          toast.success("Welcome to Lindt Admin!");
+          navigate("/admin", { replace: true });
+        } else {
+          toast.success(
+            "Login successful! Welcome back, " +
+              existingUser.name +
+              "!"
+          );
+          navigate(destination, { replace: true });
+        }
       } else {
+        // Registration validation
         if (!name.trim()) {
-          setMessage("Please enter your name.");
+          toast.error("Please enter your name.");
           return;
         }
 
-        const existingUser = users.find(
-          (user) => user.email?.toLowerCase() === cleanEmail
-        );
+        const emailExists =
+          users.some(
+            (user) =>
+              user.email?.trim().toLowerCase() === cleanEmail
+          ) ||
+          admins.some(
+            (admin) =>
+              admin.email?.trim().toLowerCase() === cleanEmail
+          );
 
-        if (existingUser) {
-          setMessage("This email is already registered. Please login.");
+        if (emailExists) {
+          toast.error(
+            "This email is already registered. Please login."
+          );
           return;
         }
 
         if (password.length < 6) {
-          setMessage("Password must contain at least 6 characters.");
+          toast.error(
+            "Password must contain at least 6 characters."
+          );
           return;
         }
 
-        await createUser({ name: name.trim(), email: cleanEmail, password });
+        // Save only the actual password, not confirmPassword
+        await createUser({
+          name: name.trim(),
+          email: cleanEmail,
+          password,
+          role: "user",
+          isBlocked: false,
+        });
 
-        alert("Your account has been created successfully! Please login.");
+        toast.success(
+          "Your account has been created successfully! Please login."
+        );
+
         setIsLogin(true);
         setName("");
         setPassword("");
+        setConfirmPassword("");
         setEmail(cleanEmail);
-        setMessage("");
       }
     } catch (error) {
       console.error("Authentication error:", error);
-      setMessage(
+
+      toast.error(
         "Unable to connect to JSON Server. Please make sure it is running."
       );
     } finally {
       setLoading(false);
     }
+  };
+
+  const switchAuthMode = (loginMode) => {
+    setIsLogin(loginMode);
+    setPassword("");
+    setConfirmPassword("");
+    setShowPassword(false);
+    setShowConfirmPassword(false);
   };
 
   return (
@@ -162,7 +256,9 @@ export default function Auth() {
               </p>
 
               <h2 className="text-3xl font-bold sm:text-4xl">
-                {isLogin ? "Login to your account" : "Create an account"}
+                {isLogin
+                  ? "Login to your account"
+                  : "Create an account"}
               </h2>
 
               <p className="mt-3 text-sm leading-6 text-gray-400">
@@ -176,10 +272,7 @@ export default function Auth() {
             <div className="mb-8 flex rounded-xl border border-white/10 bg-white/[0.04] p-1">
               <button
                 type="button"
-                onClick={() => {
-                  setIsLogin(true);
-                  setMessage("");
-                }}
+                onClick={() => switchAuthMode(true)}
                 className={`flex-1 rounded-lg py-3 text-sm font-semibold transition ${
                   isLogin
                     ? "bg-amber-600 text-white shadow-lg"
@@ -191,10 +284,7 @@ export default function Auth() {
 
               <button
                 type="button"
-                onClick={() => {
-                  setIsLogin(false);
-                  setMessage("");
-                }}
+                onClick={() => switchAuthMode(false)}
                 className={`flex-1 rounded-lg py-3 text-sm font-semibold transition ${
                   !isLogin
                     ? "bg-amber-600 text-white shadow-lg"
@@ -212,12 +302,13 @@ export default function Auth() {
                   <label className="mb-2 block text-sm font-medium text-gray-300">
                     Full Name
                   </label>
+
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Enter your full name"
-                    required={!isLogin}
+                    required
                     className="w-full rounded-xl border border-white/10 bg-white/[0.05] px-4 py-4 text-white outline-none transition placeholder:text-gray-500 focus:border-amber-500"
                   />
                 </div>
@@ -227,6 +318,7 @@ export default function Auth() {
                 <label className="mb-2 block text-sm font-medium text-gray-300">
                   Email Address
                 </label>
+
                 <input
                   type="email"
                   value={email}
@@ -237,6 +329,7 @@ export default function Auth() {
                 />
               </div>
 
+              {/* PASSWORD */}
               <div>
                 <label className="mb-2 block text-sm font-medium text-gray-300">
                   Password
@@ -258,14 +351,49 @@ export default function Auth() {
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 transition hover:text-amber-400"
                     aria-label="Toggle password visibility"
                   >
-                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    {showPassword ? (
+                      <EyeOff size={20} />
+                    ) : (
+                      <Eye size={20} />
+                    )}
                   </button>
                 </div>
               </div>
 
-              {message && (
-                <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
-                  {message}
+              {/* CONFIRM PASSWORD - SIGNUP ONLY */}
+              {!isLogin && (
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-gray-300">
+                    Confirm Password
+                  </label>
+
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={confirmPassword}
+                      onChange={(e) =>
+                        setConfirmPassword(e.target.value)
+                      }
+                      placeholder="Re-enter your password"
+                      required
+                      className="w-full rounded-xl border border-white/10 bg-white/[0.05] px-4 py-4 pr-12 text-white outline-none transition placeholder:text-gray-500 focus:border-amber-500"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 transition hover:text-amber-400"
+                      aria-label="Toggle confirm password visibility"
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff size={20} />
+                      ) : (
+                        <Eye size={20} />
+                      )}
+                    </button>
+                  </div>
                 </div>
               )}
 
@@ -292,10 +420,7 @@ export default function Auth() {
 
               <button
                 type="button"
-                onClick={() => {
-                  setIsLogin(!isLogin);
-                  setMessage("");
-                }}
+                onClick={() => switchAuthMode(!isLogin)}
                 className="ml-2 font-semibold text-amber-500 transition hover:text-amber-400"
               >
                 {isLogin ? "Sign Up" : "Login"}

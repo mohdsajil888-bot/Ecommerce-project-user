@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import toast from "react-hot-toast";
 
 import {
   selectCartItems,
@@ -11,6 +12,9 @@ import {
 
 import { getProduct, updateProduct } from "../services/productService";
 import { createOrder } from "../services/orderService";
+import { apiRequest } from "../services/api";
+
+import { logout } from "../features/auth/authSlice";
 import { productStockUpdated } from "../features/products/productsSlice";
 import { orderAdded } from "../features/orders/ordersSlice";
 
@@ -23,7 +27,6 @@ import {
   Truck,
 } from "lucide-react";
 
-
 export default function Checkout() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -33,7 +36,6 @@ export default function Checkout() {
   const user = useSelector((state) => state.auth.user);
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   const formatPrice = (price) =>
     `₹${Number(price || 0).toLocaleString("en-IN", {
@@ -41,17 +43,21 @@ export default function Checkout() {
       maximumFractionDigits: 2,
     })}`;
 
-  // PLACE ORDER
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
 
+    if (!user) {
+      toast.error("Please login to place an order.");
+      navigate("/login");
+      return;
+    }
+
     if (!cartItems.length) {
-      setError("Your cart is empty. Please add products first.");
+      toast.error("Your cart is empty. Please add products first.");
       return;
     }
 
     setLoading(true);
-    setError("");
 
     const formData = new FormData(e.currentTarget);
 
@@ -64,7 +70,41 @@ export default function Checkout() {
     const successfullyUpdated = [];
 
     try {
-      // STEP 1: CHECK STOCK AVAILABILITY
+      // STEP 1: CHECK LATEST CUSTOMER ACCOUNT STATUS
+      let latestUser;
+
+      if (user.id !== undefined && user.id !== null) {
+        latestUser = await apiRequest(`/users/${user.id}`);
+      } else if (user.email) {
+        const users = await apiRequest(
+          `/users?email=${encodeURIComponent(user.email)}`
+        );
+
+        latestUser = users.find(
+          (u) =>
+            u.email?.toLowerCase() === user.email.toLowerCase()
+        );
+      }
+
+      if (!latestUser) {
+        throw new Error(
+          "Unable to verify your account. Please login again."
+        );
+      }
+
+      // BLOCKED CUSTOMER CHECK
+      if (latestUser.isBlocked === true) {
+        dispatch(logout());
+
+        toast.error(
+          "Your account has been blocked. Please contact customer support."
+        );
+
+        navigate("/login", { replace: true });
+        return;
+      }
+
+      // STEP 2: CHECK STOCK AVAILABILITY
       for (const item of cartItems) {
         const product = await getProduct(item.id);
 
@@ -102,16 +142,25 @@ export default function Checkout() {
         });
       }
 
-      // STEP 2: REDUCE PRODUCT STOCK
+      // STEP 3: REDUCE PRODUCT STOCK
       for (const product of updatedProducts) {
-        await updateProduct(product.id, { stock: product.newStock });
+        await updateProduct(product.id, {
+          stock: product.newStock,
+        });
+
         successfullyUpdated.push(product);
-        dispatch(productStockUpdated({ id: product.id, stock: product.newStock }));
+
+        dispatch(
+          productStockUpdated({
+            id: product.id,
+            stock: product.newStock,
+          })
+        );
       }
 
-      // STEP 3: CREATE ORDER
+      // STEP 4: CREATE ORDER
       const orderData = {
-        userId: user?.id ?? user?.email ?? null,
+        userId: latestUser.id ?? latestUser.email,
         customerName,
         email,
         phone,
@@ -131,12 +180,15 @@ export default function Checkout() {
       };
 
       const savedOrder = await createOrder(orderData);
+
       dispatch(orderAdded(savedOrder));
 
-      // STEP 4: CLEAR CART AFTER SUCCESS
+      // STEP 5: CLEAR CART
       dispatch(clearCart());
 
-      // STEP 5: OPEN ORDER SUCCESS PAGE
+      toast.success("Your order has been placed successfully!");
+
+      // STEP 6: OPEN ORDER SUCCESS PAGE
       navigate("/order-success", {
         replace: true,
         state: {
@@ -148,21 +200,28 @@ export default function Checkout() {
           },
         },
       });
-
     } catch (err) {
       console.error("Order placement error:", err);
 
       // RESTORE STOCK IF ORDER PLACEMENT FAILS
       for (const product of [...successfullyUpdated].reverse()) {
         try {
-          await updateProduct(product.id, { stock: product.oldStock });
-          dispatch(productStockUpdated({ id: product.id, stock: product.oldStock }));
+          await updateProduct(product.id, {
+            stock: product.oldStock,
+          });
+
+          dispatch(
+            productStockUpdated({
+              id: product.id,
+              stock: product.oldStock,
+            })
+          );
         } catch (restoreError) {
           console.error("Stock restoration failed:", restoreError);
         }
       }
 
-      setError(
+      toast.error(
         err.message || "Something went wrong. Please try again."
       );
     } finally {
@@ -280,13 +339,6 @@ export default function Checkout() {
               />
             </div>
 
-            {/* ERROR */}
-            {error && (
-              <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400">
-                {error}
-              </div>
-            )}
-
             {/* PLACE ORDER BUTTON */}
             <button
               type="submit"
@@ -295,11 +347,8 @@ export default function Checkout() {
             >
               {loading ? (
                 <>
-                  <LoaderCircle
-                    size={19}
-                    className="animate-spin"
-                  />
-                  Placing Your Order...
+                  <LoaderCircle size={19} className="animate-spin" />
+                  Checking Account & Placing Order...
                 </>
               ) : (
                 <>
